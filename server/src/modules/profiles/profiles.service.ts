@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
-import { db } from '../../db/drizzle';
-import { profiles } from '../../db/schema';
-import { UpdateProfileInput } from './profiles.schemas';
+import { db } from '../../db/drizzle.js';
+import { profiles } from '../../db/schema.js';
+import { UpdateProfileInput } from './profiles.schemas.js';
 
 export class ProfilesService {
   static async getProfileById(id: string) {

@@ -68,13 +68,11 @@ const formSchema = z.object({
   }).refine((date) => date <= new Date(), {
     message: "Data do plantio não pode ser futura",
   }),
-  harvestForecast: z.date({
-    required_error: "Previsão de colheita é obrigatória",
-  }),
+  harvestForecast: z.date().optional(),
   product: z.string().min(1, "Produto é obrigatório"),
-  sensors: z.array(z.number()).min(1, "Pelo menos um sensor deve ser selecionado"),
+  sensors: z.array(z.number()).optional(),
   amount: z.number().min(1, "Quantidade deve ser maior que 0"),
-  repetitionTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Formato de hora inválido (HH:mm)"),
+  repetitionTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Formato de tempo inválido (HH:MM)"),
   observations: z.string().optional(),
   harvestStatus: z.enum(["seeded", "growing", "ready", "harvested", "paused"]),
   plantedSeedlings: z.number().min(0, "Quantidade de mudas plantadas deve ser maior ou igual a 0"),
@@ -116,11 +114,12 @@ export function SectorModal({
       title: "",
       product: "",
       sensors: [],
-      amount: 0,
+      amount: undefined,
       repetitionTime: "08:00",
       observations: "",
       harvestStatus: "seeded" as const,
-      harvestForecast: new Date(),
+      harvestForecast: undefined,
+      plantingDate: new Date(),
       plantedSeedlings: 0,
       harvestedSeedlings: 0,
       ...initialData,
@@ -170,6 +169,73 @@ export function SectorModal({
                    </FormControl>
                    <FormMessage />
                  </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="product"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-lato font-medium">Produto plantado</FormLabel>
+                  <div className="space-y-2">
+                    <Select onValueChange={field.onChange} value={field.value} disabled={viewMode}>
+                       <FormControl>
+                         <SelectTrigger>
+                           <SelectValue placeholder="Selecione o produto" />
+                         </SelectTrigger>
+                       </FormControl>
+                      <SelectContent>
+                        {products.map((product) => (
+                          <SelectItem key={product} value={product}>
+                            {product}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    {!showNewProductInput && !viewMode ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowNewProductInput(true)}
+                        className="w-full gap-2"
+                      >
+                        <Plus size={14} />
+                        Novo produto
+                      </Button>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Nome do novo produto"
+                          value={newProduct}
+                          onChange={(e) => setNewProduct(e.target.value)}
+                          onKeyPress={(e) => e.key === "Enter" && handleAddNewProduct()}
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={handleAddNewProduct}
+                        >
+                          Adicionar
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setShowNewProductInput(false);
+                            setNewProduct("");
+                          }}
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  <FormMessage />
+                </FormItem>
               )}
             />
 
@@ -256,110 +322,7 @@ export function SectorModal({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="product"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="font-lato font-medium">Produto plantado</FormLabel>
-                  <div className="space-y-2">
-                    <Select onValueChange={field.onChange} value={field.value} disabled={viewMode}>
-                       <FormControl>
-                         <SelectTrigger>
-                           <SelectValue placeholder="Selecione o produto" />
-                         </SelectTrigger>
-                       </FormControl>
-                      <SelectContent>
-                        {products.map((product) => (
-                          <SelectItem key={product} value={product}>
-                            {product}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    
-                    {!showNewProductInput && !viewMode ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowNewProductInput(true)}
-                        className="w-full gap-2"
-                      >
-                        <Plus size={14} />
-                        Novo produto
-                      </Button>
-                    ) : (
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Nome do novo produto"
-                          value={newProduct}
-                          onChange={(e) => setNewProduct(e.target.value)}
-                          onKeyPress={(e) => e.key === "Enter" && handleAddNewProduct()}
-                        />
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={handleAddNewProduct}
-                        >
-                          Adicionar
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setShowNewProductInput(false);
-                            setNewProduct("");
-                          }}
-                        >
-                          Cancelar
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            <FormField
-              control={form.control}
-              name="sensors"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="font-lato font-medium">Sensores do plantio</FormLabel>
-                   <FormControl>
-                     <div className="border rounded-md p-3 max-h-48 overflow-y-auto">
-                       <div className="grid grid-cols-5 gap-2">
-                         {Array.from({ length: 100 }, (_, i) => i + 1).map((sensorNum) => (
-                           <label
-                             key={sensorNum}
-                             className="flex items-center space-x-2 cursor-pointer"
-                           >
-                             <input
-                               type="checkbox"
-                               checked={field.value.includes(sensorNum)}
-                               disabled={viewMode}
-                               onChange={(e) => {
-                                 if (e.target.checked) {
-                                   field.onChange([...field.value, sensorNum]);
-                                 } else {
-                                   field.onChange(field.value.filter((s: number) => s !== sensorNum));
-                                 }
-                               }}
-                               className="rounded"
-                             />
-                             <span className="text-sm">{sensorNum}</span>
-                           </label>
-                         ))}
-                       </div>
-                     </div>
-                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <FormField
               control={form.control}
@@ -374,7 +337,8 @@ export function SectorModal({
                        placeholder="250"
                        {...field}
                        disabled={viewMode}
-                       onChange={(e) => field.onChange(Number(e.target.value))}
+                       onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                       value={field.value || ''}
                      />
                    </FormControl>
                   <FormMessage />
@@ -387,20 +351,13 @@ export function SectorModal({
               name="repetitionTime"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-lato font-medium">Repetir a cada (horas)</FormLabel>
+                  <FormLabel className="font-lato font-medium">Repetir a cada</FormLabel>
                    <FormControl>
                      <Input 
-                       type="number"
-                       min="1"
-                       max="24"
-                       placeholder="8"
+                       type="time"
+                       placeholder="08:00"
                        {...field}
                        disabled={viewMode}
-                       onChange={(e) => {
-                         const hours = parseInt(e.target.value) || 8;
-                         field.onChange(`${hours.toString().padStart(2, '0')}:00`);
-                       }}
-                       value={field.value ? parseInt(field.value.split(':')[0]) : 8}
                      />
                    </FormControl>
                   <FormMessage />
@@ -476,6 +433,45 @@ export function SectorModal({
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="sensors"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-lato font-medium">Sensores do plantio (opcional)</FormLabel>
+                   <FormControl>
+                     <div className="border rounded-md p-3 max-h-48 overflow-y-auto">
+                       <div className="grid grid-cols-5 gap-2">
+                         {Array.from({ length: 100 }, (_, i) => i + 1).map((sensorNum) => (
+                           <label
+                             key={sensorNum}
+                             className="flex items-center space-x-2 cursor-pointer"
+                           >
+                             <input
+                               type="checkbox"
+                               checked={field.value?.includes(sensorNum) || false}
+                               disabled={viewMode}
+                               onChange={(e) => {
+                                 const currentValue = field.value || [];
+                                 if (e.target.checked) {
+                                   field.onChange([...currentValue, sensorNum]);
+                                 } else {
+                                   field.onChange(currentValue.filter((s: number) => s !== sensorNum));
+                                 }
+                               }}
+                               className="rounded"
+                             />
+                             <span className="text-sm">{sensorNum}</span>
+                           </label>
+                         ))}
+                       </div>
+                     </div>
+                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}

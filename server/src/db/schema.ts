@@ -36,3 +36,13 @@ export const sectors = pgTable('sectors', {
   seedlingsHarvested: integer('seedlings_harvested').default(0),
   lastIrrigations: jsonb('last_irrigations').default([]),
 });
+
+// Chat messages armazenam histórico por sessão (conversationId) e opcionalmente user_id
+export const chatMessages = pgTable('chat_messages', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: text('session_id').notNull(),
+  userId: uuid('user_id').references(() => profiles.id),
+  role: text('role').notNull(), // 'user' | 'model'
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at').default(sql`now()`).notNull(),
+});

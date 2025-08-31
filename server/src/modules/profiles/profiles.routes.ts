@@ -1,10 +1,18 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { authMiddleware } from '../../middleware/auth';
-import { ProfilesService } from './profiles.service';
-import { updateProfileSchema } from './profiles.schemas';
+import { authMiddleware } from '../../middleware/auth.js';
+import { ProfilesService } from './profiles.service.js';
+import { updateProfileSchema } from './profiles.schemas.js';
 
-const profiles = new Hono();
+type Variables = {
+  user: {
+    id: string;
+    email: string | undefined;
+    [key: string]: any;
+  };
+};
+
+const profiles = new Hono<{ Variables: Variables }>();
 
 // Get current user profile
 profiles.get('/me', authMiddleware, async (c) => {

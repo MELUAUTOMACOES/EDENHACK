@@ -15,6 +15,13 @@ const Irrigacao = () => {
   const [editingSector, setEditingSector] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState(false);
   const [localSectors, setLocalSectors] = useState<Sector[]>([]);
+  const [recentHistory, setRecentHistory] = useState<Array<{
+    time: string;
+    duration: string;
+    amount: string;
+    sector: string;
+    product: string;
+  }>>([]);
   
   const { sectors, loading, error, createSector, updateSector, deleteSector } = useSectors();
   const { speak } = useSpeech();
@@ -71,25 +78,50 @@ const Irrigacao = () => {
   };
 
   const handleSectorIrrigate = (sectorId: string) => {
+    const sector = combinedSectors.find(s => s.id === sectorId);
+    if (!sector) return;
+    
+    const [hours, minutes] = sector.repetitionTime.split(':').map(Number);
+    const totalMinutes = hours * 60 + minutes;
+    const now = new Date();
+    
+    // Adicionar ao histórico recente
+    const newHistoryEntry = {
+      time: now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      duration: `${totalMinutes} min`,
+      amount: `${sector.amount || 250}ml`,
+      sector: sector.title,
+      product: sector.product
+    };
+    
+    setRecentHistory(prev => [newHistoryEntry, ...prev].slice(0, 10));
+    
+    // Atualizar setor local com irrigação e histórico
     setLocalSectors(prev => {
       const existing = prev.find(s => s.id === sectorId);
-      const sector = existing || combinedSectors.find(s => s.id === sectorId);
-      if (!sector) return prev;
+      const irrigations = (existing as any)?.irrigationHistory || [];
       
-      const [hours, minutes] = sector.repetitionTime.split(':').map(Number);
-      const totalMinutes = hours * 60 + minutes;
       const updatedSector = { 
         ...sector, 
         isIrrigating: true,
-        lastIrrigation: new Date(),
-        remainingTime: totalMinutes * 60
-      };
+        lastIrrigation: now,
+        remainingTime: totalMinutes * 60,
+        irrigationHistory: [
+          {
+            date: now.toISOString(),
+            duration: totalMinutes,  
+            volume: sector.amount || 250
+          },
+          ...irrigations
+        ].slice(0, 10)
+      } as any;
       
       return existing 
         ? prev.map(s => s.id === sectorId ? updatedSector : s)
         : [...prev, updatedSector];
     });
-    speak(`Iniciando irrigação do setor ${sectorId}`);
+    
+    speak(`Iniciando irrigação do ${sector.title}`);
   };
 
   const handleSectorStop = (sectorId: string) => {
@@ -199,8 +231,8 @@ const Irrigacao = () => {
     return {
       title: sector.title,
       product: sector.product,
-      plantingDate: sector.plantingDate,
-      sensors: sector.sensorsUI,
+      plantingDate: sector.plantingDate || new Date(),
+      sensors: sector.sensorsUI || [],
       amount: sector.amount,
       repetitionTime: sector.repetitionTime,
       observations: sector.observations,
@@ -209,6 +241,49 @@ const Irrigacao = () => {
       plantedSeedlings: sector.plantedSeedlings || 0,
       harvestedSeedlings: sector.harvestedSeedlings || 0,
     };
+  };
+  
+  const getIrrigationHistory = () => {
+    if (!editingSector) return [];
+    const localSector = localSectors.find(s => s.id === editingSector);
+    const sector = combinedSectors.find(s => s.id === editingSector);
+    if (!sector) return [];
+    
+    // Se há histórico armazenado no setor local, usar ele
+    const irrigationHistory = (localSector as any)?.irrigationHistory || [];
+    
+    const histories = irrigationHistory.slice(0, 3).map((irr: any) => ({
+      date: new Date(irr.date).toLocaleString('pt-BR', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      }),
+      duration: `${irr.duration} min`,
+      volume: `${irr.volume}ml`,
+      sector: sector.title,
+      product: sector.product
+    }));
+    
+    // Se não há histórico suficiente, adicionar alguns fictícios
+    const now = new Date();
+    for (let i = histories.length; i < 3; i++) {
+      const pastDate = new Date(now.getTime() - ((i + 1) * 24 * 60 * 60 * 1000));
+      histories.push({
+        date: pastDate.toLocaleString('pt-BR', { 
+          day: '2-digit', 
+          month: '2-digit', 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        duration: '15 min',
+        volume: `${sector.amount || 250}ml`,
+        sector: sector.title,
+        product: sector.product
+      });
+    }
+    
+    return histories;
   };
 
   return (
@@ -306,7 +381,7 @@ const Irrigacao = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-3">
-            {[
+            {(recentHistory.length > 0 ? recentHistory : [
               { 
                 time: "06:00", 
                 duration: "15 min", 
@@ -328,7 +403,7 @@ const Irrigacao = () => {
                 sector: "Setor 1 - Horta A",
                 product: "🥬 Alface"
               },
-            ].map((entry, index) => (
+            ]).slice(0, 3).map((entry, index) => (
               <Card key={index} className="bg-secondary/30">
                 <CardContent className="p-3">
                   <div className="space-y-2">
@@ -340,7 +415,6 @@ const Irrigacao = () => {
                       </div>
                       <div className="text-right">
                         <p className="font-roboto font-bold text-eden-blue">{entry.amount}</p>
-                        <p className="text-sm text-muted-foreground">{entry.duration}</p>
                       </div>
                     </div>
                   </div>
@@ -364,29 +438,7 @@ const Irrigacao = () => {
         onSubmit={handleSectorSubmit}
         initialData={getEditingData()}
         viewMode={viewMode}
-        irrigationHistory={[
-          { 
-            date: "29/08 - 06:00", 
-            duration: "15 min", 
-            volume: "250ml",
-            sector: "Setor 1 - Horta A",
-            product: "🥬 Alface"
-          },
-          { 
-            date: "28/08 - 18:00", 
-            duration: "20 min", 
-            volume: "320ml",
-            sector: "Setor 2 - Horta B",
-            product: "🍅 Tomate"
-          },
-          { 
-            date: "28/08 - 06:00", 
-            duration: "15 min", 
-            volume: "240ml",
-            sector: "Setor 1 - Horta A",
-            product: "🥬 Alface"
-          },
-        ]}
+        irrigationHistory={getIrrigationHistory()}
       />
     </div>
   );

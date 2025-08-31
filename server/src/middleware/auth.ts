@@ -1,10 +1,18 @@
 import { createMiddleware } from 'hono/factory';
 import { createClient } from '@supabase/supabase-js';
-import { env } from '../config/env';
+import { env } from '../config/env.js';
+
+type Variables = {
+  user: {
+    id: string;
+    email: string | undefined;
+    [key: string]: any;
+  };
+};
 
 const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE);
 
-export const authMiddleware = createMiddleware(async (c, next) => {
+export const authMiddleware = createMiddleware<{ Variables: Variables }>(async (c, next) => {
   const authHeader = c.req.header('Authorization');
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

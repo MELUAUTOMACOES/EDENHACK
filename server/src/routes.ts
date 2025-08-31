@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
-import { health } from './modules/health/health.routes';
-import { profiles } from './modules/profiles/profiles.routes';
+import { health } from './modules/health/health.routes.js';
+import { profiles } from './modules/profiles/profiles.routes.js';
 
 const api = new Hono();
 
