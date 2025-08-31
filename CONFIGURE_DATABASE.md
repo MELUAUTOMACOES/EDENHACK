@@ -15,12 +15,12 @@ No painel do Supabase, você verá "Connection string".
 **Para SUPABASE_DB_URL (aplicação):**
 - Selecione: Mode = "Transaction" 
 - Copie a URL que aparece
-- Formato esperado: `postgres://postgres.qexadnikqiwgvcrqkmiv:[SUA_SENHA]@aws-0-sa-east-1.pooler.supabase.com:6543/postgres`
+- Formato esperado: `postgresql://postgres.qexadnikqiwgvcrqkmiv:Deusmeama18*@aws-1-sa-east-1.pooler.supabase.com:6543/postgres`
 
 **Para SUPABASE_DB_MIGRATIONS_URL (migrações):**
 - Selecione: Mode = "Session"
 - Copie a URL que aparece  
-- Formato esperado: `postgres://postgres.qexadnikqiwgvcrqkmiv:[SUA_SENHA]@aws-0-sa-east-1.pooler.supabase.com:5432/postgres`
+- Formato esperado: `postgresql://postgres.qexadnikqiwgvcrqkmiv:Deusmeama18*@aws-1-sa-east-1.pooler.supabase.com:5432/postgres`
 
 ### 3. Atualize server/.env
 

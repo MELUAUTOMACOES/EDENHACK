@@ -8,6 +8,7 @@ import Irrigacao from "./pages/Irrigacao";
 import ChatIA from "./pages/ChatIA";
 import Aprender from "./pages/Aprender";
 import Perfil from "./pages/Perfil";
+import Clima from "./pages/Clima";
 import NotFound from "./pages/NotFound";
 import { BottomNavigation } from "./components/layout/BottomNavigation";
 
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/irrigacao" element={<Irrigacao />} />
             <Route path="/chat" element={<ChatIA />} />
             <Route path="/aprender" element={<Aprender />} />
+            <Route path="/clima" element={<Clima />} />
             <Route path="/perfil" element={<Perfil />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

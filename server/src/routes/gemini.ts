@@ -26,7 +26,7 @@ const FORBIDDEN_TOPICS = [
   /autoles(i|ã)on|suic[ií]dio/i,
 ];
 
-const MAX_PROMPT_CHARS = 1500;
+const MAX_PROMPT_CHARS = 800;
 
 const gemini = new Hono();
 

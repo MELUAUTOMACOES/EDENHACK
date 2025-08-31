@@ -77,6 +77,7 @@ const formSchema = z.object({
   harvestStatus: z.enum(["seeded", "growing", "ready", "harvested", "paused"]),
   plantedSeedlings: z.number().min(0, "Quantidade de mudas plantadas deve ser maior ou igual a 0"),
   harvestedSeedlings: z.number().min(0, "Quantidade de mudas colhidas deve ser maior ou igual a 0"),
+  area: z.number().min(0, "Área deve ser maior ou igual a 0").optional(),
 });
 
 export type SectorFormData = z.infer<typeof formSchema>;
@@ -385,6 +386,28 @@ export function SectorModal({
                       <SelectItem value="paused">⏸️ Pausado</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="area"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-lato font-medium">Área aproximada (m²)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      min="0"
+                      placeholder="100"
+                      {...field}
+                      disabled={viewMode}
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                      value={field.value || ''}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

@@ -1,12 +1,12 @@
-import { Home, Droplets, MessageCircle, BookOpen, User } from "lucide-react";
+import { Home, Droplets, MessageCircle, Cloud, User, Bot } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { path: "/", icon: Home, label: "Início" },
   { path: "/irrigacao", icon: Droplets, label: "Irrigação" },
-  { path: "/chat", icon: MessageCircle, label: "Adan AI" },
-  { path: "/aprender", icon: BookOpen, label: "Aprender" },
+  { path: "/chat", icon: Bot, label: "Fale com Adan" },
+  { path: "/clima", icon: Cloud, label: "Clima" },
   { path: "/perfil", icon: User, label: "Perfil" },
 ];
 

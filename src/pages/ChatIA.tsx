@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, Mic, Send, Volume2 } from "lucide-react";
+import { MessageCircle, Mic, Send, Volume2, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -169,12 +169,12 @@ const ChatIA = () => {
       <div className="bg-gradient-primary text-white p-3 md:p-4 shadow-soft shrink-0">
         <div className="flex items-center gap-2 md:gap-3">
           <div className="p-1.5 md:p-2 bg-white/20 rounded-lg">
-            <MessageCircle size={20} className="md:w-6 md:h-6" />
+            <Bot size={20} className="md:w-6 md:h-6" />
           </div>
           <div>
-            <h1 className="text-lg md:text-xl font-roboto font-bold">Adan AI</h1>
+            <h1 className="text-lg md:text-xl font-roboto font-bold">Fale com Adan</h1>
             <p className="text-white/90 font-lato text-xs md:text-sm">
-              Assistente especializada em agricultura
+              Assistente especializado em agricultura
             </p>
           </div>
         </div>

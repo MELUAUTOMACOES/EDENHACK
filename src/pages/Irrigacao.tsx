@@ -193,6 +193,7 @@ const Irrigacao = () => {
           harvestForecast: data.harvestForecast,
           plantedSeedlings: data.plantedSeedlings,
           harvestedSeedlings: data.harvestedSeedlings,
+          area: data.area,
         });
         speak("Setor atualizado com sucesso");
       } else {
@@ -203,7 +204,7 @@ const Irrigacao = () => {
           isIrrigating: false,
           isAutomatic: true,
           plantingDate: data.plantingDate,
-          sensors: data.sensors.map(String),
+          sensorsUI: data.sensors,
           amount: data.amount,
           repetitionTime: data.repetitionTime,
           observations: data.observations || "",
@@ -211,6 +212,7 @@ const Irrigacao = () => {
           harvestForecast: data.harvestForecast,
           plantedSeedlings: data.plantedSeedlings,
           harvestedSeedlings: data.harvestedSeedlings,
+          area: data.area,
         });
         speak("Novo setor criado com sucesso");
       }
@@ -240,6 +242,7 @@ const Irrigacao = () => {
       harvestForecast: sector.harvestForecast,
       plantedSeedlings: sector.plantedSeedlings || 0,
       harvestedSeedlings: sector.harvestedSeedlings || 0,
+      area: sector.area,
     };
   };
   
@@ -359,6 +362,7 @@ const Irrigacao = () => {
                 sensors={sector.sensorsUI}
                 plantedSeedlings={sector.plantedSeedlings}
                 harvestedSeedlings={sector.harvestedSeedlings}
+                area={sector.area}
                 onEdit={handleSectorEdit}
                 onIrrigate={handleSectorIrrigate}
                 onStop={handleSectorStop}

@@ -25,6 +25,7 @@ export interface Sector {
   seedlings_planted?: number;
   seedlings_harvested?: number;
   last_irrigations?: IrrigationRecord[];
+  area?: number; // Área aproximada em m²
   // Campos adicionais para compatibilidade com a UI
   title: string;
   product: string;
@@ -75,6 +76,7 @@ export const useSectors = () => {
         harvestForecast: sector.harvest_eta ? new Date(sector.harvest_eta) : new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
         plantedSeedlings: sector.seedlings_planted || 0,
         harvestedSeedlings: sector.seedlings_harvested || 0,
+        area: sector.area || undefined,
       }));
 
       setSectors(mappedSectors);
@@ -124,7 +126,8 @@ export const useSectors = () => {
           harvest_status: sectorData.harvest_status || 'seeded',
           seedlings_planted: sectorData.plantedSeedlings || 0,
           seedlings_harvested: sectorData.harvestedSeedlings || 0,
-          last_irrigations: []
+          last_irrigations: [],
+          area: sectorData.area || null
         }])
         .select()
         .single();
@@ -155,7 +158,8 @@ export const useSectors = () => {
           repeat_every_hours: parseInt(updates.repetitionTime?.split(':')[0] || '8'),
           harvest_status: updates.harvest_status || 'seeded',
           seedlings_planted: updates.plantedSeedlings || 0,
-          seedlings_harvested: updates.harvestedSeedlings || 0
+          seedlings_harvested: updates.harvestedSeedlings || 0,
+          area: updates.area || null
         })
         .eq('id', id);
 

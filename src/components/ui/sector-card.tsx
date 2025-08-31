@@ -1,9 +1,10 @@
-import { Edit, Droplets, Square, Calendar, Zap, ChevronDown, Check } from "lucide-react";
+import { Edit, Droplets, Square, Calendar, Zap, ChevronDown, Check, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
+import useWeather from "@/hooks/use-weather";
 
 interface SectorCardProps {
   id: string;
@@ -20,6 +21,7 @@ interface SectorCardProps {
   sensors?: number[];
   plantedSeedlings?: number;
   harvestedSeedlings?: number;
+  area?: number;
   onEdit: (id: string) => void;
   onIrrigate: (id: string) => void;
   onStop: (id: string) => void;
@@ -43,6 +45,7 @@ export function SectorCard({
   sensors = [],
   plantedSeedlings = 0,
   harvestedSeedlings = 0,
+  area,
   onEdit,
   onIrrigate,
   onStop,
@@ -50,6 +53,26 @@ export function SectorCard({
   onToggleAutomatic,
   onHarvestStatusChange,
 }: SectorCardProps) {
+  const { data: weatherData } = useWeather(-24.6525552, -47.8817452);
+  
+  // Cálculo de irrigação baseado na área e condições climáticas
+  const calculateDailyIrrigation = () => {
+    if (!area || !weatherData) return null;
+    
+    // Fórmula: (Temp Solo × 0.2) + ((100 - Umidade) × 0.05)
+    const irrigationMm = (weatherData.soilTemperature * 0.2) + ((100 - weatherData.humidity) * 0.05);
+    
+    // Conversão: 1mm por m² = 1 litro por m²
+    // ML por dia = irrigação em mm × área em m² × 1000
+    const mlPerDay = Math.round(irrigationMm * area * 1000);
+    
+    return {
+      mlPerDay,
+      irrigationMm: Math.round(irrigationMm * 10) / 10
+    };
+  };
+  
+  const irrigationData = calculateDailyIrrigation();
   const getHarvestStatusConfig = () => {
     switch (harvestStatus) {
       case "seeded":
@@ -120,6 +143,18 @@ export function SectorCard({
                   <span>💧</span>
                   <span className="font-lato truncate">Quantidade: {amount}ml</span>
                 </div>
+                {area && (
+                  <div className="flex items-center gap-2 text-base text-muted-foreground">
+                    <span>📏</span>
+                    <span className="font-lato truncate">Área: {area}m²</span>
+                  </div>
+                )}
+                {irrigationData && (
+                  <div className="flex items-center gap-2 text-base font-medium text-eden-green">
+                    <TrendingUp size={16} />
+                    <span className="font-lato">Irrigação Necessária: {irrigationData.mlPerDay.toLocaleString('pt-BR')} ML/dia</span>
+                  </div>
+                )}
                 {sensors.length > 0 && (
                   <div className="flex items-center gap-2 text-base text-muted-foreground">
                     <span>📡</span>
