@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { User, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 import { apiFetch } from '@/lib/api';
+import { authenticatedRequest } from '@/lib/http';
 
 export interface AuthState {
   user: User | null;
@@ -54,7 +55,7 @@ export const useAuth = () => {
       // If user is created and name is provided, update profile
       if (data.user && name) {
         try {
-          await apiFetch('/profiles/me', {
+          await authenticatedRequest('/api/profiles/me', {
             method: 'PATCH',
             body: JSON.stringify({ name }),
           });

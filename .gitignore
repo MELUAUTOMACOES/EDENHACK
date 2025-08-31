@@ -26,6 +26,10 @@ dist-ssr
 
 # Environment files (do NOT commit secrets)
 .env
-*.env
+.env.local
 */.env
 server/.env
+
+# Allow template environment files
+!.env.development
+!.env.production

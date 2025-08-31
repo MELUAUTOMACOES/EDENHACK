@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { apiFetch } from "@/lib/api";
+import { get, authenticatedRequest } from "@/lib/http";
 import { useToast } from "@/hooks/use-toast";
 
 const authSchema = z.object({
@@ -84,7 +85,7 @@ const Auth = () => {
 
   const testApiHealth = async () => {
     try {
-      const health = await apiFetch('/health', { requireAuth: false });
+      const health = await get('/api/health');
       setApiStatus(health);
       toast({
         title: "API Status",
@@ -101,7 +102,7 @@ const Auth = () => {
 
   const fetchProfile = async () => {
     try {
-      const profile = await apiFetch('/profiles/me');
+      const profile = await authenticatedRequest<{ name?: string }>('/api/profiles/me');
       setUserProfile(profile);
       toast({
         title: "Perfil carregado",
